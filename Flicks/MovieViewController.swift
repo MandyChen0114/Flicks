@@ -15,13 +15,15 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     @IBOutlet weak var movieTableView: UITableView!
     
     var movies: [NSDictionary] = []
+    var endpoint : String?
+    
     var errorAlertView: UIView!
     var isMoreDataLoading = false
     var loadingMoreView:InfiniteScrollActivityView?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         movieTableView.delegate = self
         movieTableView.dataSource = self
         movieTableView.rowHeight = 180;
@@ -41,7 +43,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
 
     // MARK: - Fetch data
     func fetchData() {
-        let url = URL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")
+        let url = URL(string:"https://api.themoviedb.org/3/movie/\(endpoint!)?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")
         var request = URLRequest(url: url!)
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         let session = URLSession(
@@ -160,7 +162,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     func refreshControlAction(_ refreshControl: UIRefreshControl) {
         
         // ... Create the URLRequest `myRequest` ...
-        let url = URL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")
+        let url = URL(string:"https://api.themoviedb.org/3/movie/\(endpoint!)?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")
         var request = URLRequest(url: url!)
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         
@@ -227,7 +229,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     func loadMoreData() {
             
         // ... Create the URLRequest `myRequest` ...
-        let url = URL(string:"https://api.themoviedb.org/3/movie/now_playing?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")
+        let url = URL(string:"https://api.themoviedb.org/3/movie/\(endpoint!)?api_key=a07e22bc18f5cb106bfe4cc1f83ad8ed")
         var request = URLRequest(url: url!)
         request.cachePolicy = .reloadIgnoringLocalAndRemoteCacheData
         
