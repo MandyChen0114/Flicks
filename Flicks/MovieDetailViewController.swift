@@ -88,9 +88,6 @@ class MovieDetailViewController: UIViewController {
         let detailViewHeight = overviewView.frame.origin.y + overviewView.frame.height + 30.0
         detailView.frame = CGRect(x: detailView.frame.origin.x, y: detailView.frame.origin.y, width: detailView.frame.width, height: detailViewHeight )
         scrollView.contentSize = CGSize(width: scrollView.frame.size.width, height: detailView.frame.origin.y + detailView.frame.size.height )
-        print("\(overviewView.frame.height)")
-        print("\(detailView.frame.height)")
-        print("\(scrollView.frame.height)")
         
     }
 

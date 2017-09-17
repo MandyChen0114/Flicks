@@ -10,16 +10,19 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MovieViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate {
+class MovieViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UIScrollViewDelegate, UISearchResultsUpdating {
 
     @IBOutlet weak var movieTableView: UITableView!
     
     var movies: [NSDictionary] = []
+    var moviesAfterSearch: [NSDictionary]!
+    
     var endpoint : String?
     
     var errorAlertView: UIView!
     var isMoreDataLoading = false
     var loadingMoreView:InfiniteScrollActivityView?
+    var searchController: UISearchController!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -28,6 +31,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         movieTableView.dataSource = self
         movieTableView.rowHeight = 180;
         
+        initSearchBar()
         initErrorView()
         initRefreshControl()
         initInfiniteScroll()
@@ -79,16 +83,45 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
     }
     
     func numberOfSections(in tableView: UITableView) -> Int {
-        return movies.count
+        if searchController.isActive && searchController.searchBar.text != "" {
+            return moviesAfterSearch.count
+        } else {
+            return movies.count
+        }
+
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "MovieTableViewCell") as! MovieTableViewCell
-        let movie = movies[indexPath.section]
+        
+        let movie = getMovie(index: indexPath.section)
+        
         if let posterPath = movie["poster_path"] as? String {
             let posterBaseUrl = "http://image.tmdb.org/t/p/w500"
             let posterUrl = NSURL(string: posterBaseUrl + posterPath)
-            cell.posterImage.setImageWith( posterUrl! as URL )
+            let imageRequest = NSURLRequest(url: posterUrl as! URL)
+
+            // MARK: - Image fade in
+             cell.posterImage.setImageWith(
+                imageRequest as URLRequest,
+                placeholderImage: nil,
+                success: { (imageRequest, imageResponse, image) -> Void in
+                    
+                    // imageResponse will be nil if the image is cached
+                    if imageResponse != nil {
+                        cell.posterImage.alpha = 0.0
+                        cell.posterImage.image = image
+                        UIView.animate(withDuration: 0.3, animations: { () -> Void in
+                            cell.posterImage.alpha = 1.0
+                        })
+                    } else {
+                        cell.posterImage.image = image
+                    }
+            },
+                failure: { (imageRequest, imageResponse, error) -> Void in
+                    // do something for the failure condition
+            })
+            
         } else {
             // No poster image. Can either set to nil (no image) or a default movie poster image
             // that you include as an asset
@@ -108,6 +141,10 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
             // no overview.
         }
         
+        // Use a red color when the user selects the cell
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = UIColor(red:0.93, green:0.71, blue:0.01, alpha:1.0)
+        cell.selectedBackgroundView = backgroundView
         
         return cell
     }
@@ -116,7 +153,6 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-
     // MARK: - HUD
     func showHud() {
         // Display HUD right before the request is made
@@ -226,6 +262,8 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
             
         }
     }
+    
+    //TODO: Refactor this function and FetchData() to avoid duplicate codes
     func loadMoreData() {
             
         // ... Create the URLRequest `myRequest` ...
@@ -262,7 +300,42 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         task.resume()
     }
         
+    
+    
+    // MARK: - Search
+    func initSearchBar() {
+        searchController = UISearchController(searchResultsController: nil)
+        searchController.searchResultsUpdater = self
         
+        searchController.dimsBackgroundDuringPresentation = false
+        searchController.hidesNavigationBarDuringPresentation = false
+        
+        searchController.searchBar.sizeToFit()
+        navigationItem.titleView = searchController.searchBar
+    }
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        if let keywords = searchController.searchBar.text {
+            moviesAfterSearch = keywords.isEmpty ? movies : movies.filter({ (movie) -> Bool in
+                if let title = movie["title"] as? String {
+                    return title.range(of: keywords, options: .caseInsensitive) != nil
+                }
+                return false
+            })
+            movieTableView.reloadData()
+        }
+    }
+    
+    func getMovie(index: Int) -> NSDictionary {
+        var movie: NSDictionary!
+        if searchController.isActive && searchController.searchBar.text != "" {
+            movie = moviesAfterSearch[index]
+        } else {
+            movie = movies[index]
+        }
+        return movie
+    }
+    
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
@@ -272,7 +345,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
         let vc = segue.destination as! MovieDetailViewController
         let cell = sender as! UITableViewCell;
         if let indexPath = movieTableView.indexPath(for: cell){
-            vc.movie = movies[indexPath.section]
+            vc.movie = getMovie(index: indexPath.section)
         }
     }
 

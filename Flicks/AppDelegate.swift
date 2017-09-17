@@ -23,19 +23,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let nowPlayingNavigationController = storyboard.instantiateViewController(withIdentifier: "MovieNavigationController") as! UINavigationController
         let nowPlayingViewController = nowPlayingNavigationController.topViewController as! MovieViewController
         nowPlayingViewController.endpoint = "now_playing"
-        nowPlayingViewController.navigationItem.title = "Now Playing"
         nowPlayingNavigationController.tabBarItem.title = "Now Playing"
-        nowPlayingNavigationController.tabBarItem.image = UIImage(named: "NowPlaying")
+        nowPlayingNavigationController.tabBarItem.image = UIImage(named: "Now_playing")
+        
+        nowPlayingViewController.navigationItem.title = "Now Playing"
         
         let topRatedNavigationController = storyboard.instantiateViewController(withIdentifier: "MovieNavigationController") as! UINavigationController
         let topRatedViewController = topRatedNavigationController.topViewController as! MovieViewController
         topRatedViewController.endpoint = "top_rated"
-        topRatedViewController.navigationItem.title = "Top Rated"
         topRatedNavigationController.tabBarItem.title = "Top Rated"
-        topRatedNavigationController.tabBarItem.image = UIImage(named: "TopRated")
+        topRatedNavigationController.tabBarItem.image = UIImage(named: "Top_rated")
+        topRatedViewController.navigationItem.title = "Top Rated"
         
         let tabBarController = UITabBarController()
         tabBarController.viewControllers = [nowPlayingNavigationController, topRatedNavigationController]
+        UITabBar.appearance().tintColor = UIColor(red:0.93, green:0.71, blue:0.01, alpha:1.0)
         
         window?.rootViewController = tabBarController
         window?.makeKeyAndVisible()
