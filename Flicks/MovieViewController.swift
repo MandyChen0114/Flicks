@@ -221,6 +221,7 @@ class MovieViewController: UIViewController, UITableViewDataSource, UITableViewD
                         refreshControl.endRefreshing()
                     }
                 } else {
+                    refreshControl.endRefreshing()
                     self.errorAlertView.isHidden = false
                 }
         });
